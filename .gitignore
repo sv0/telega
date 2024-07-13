@@ -2,3 +2,7 @@
 .envrc
 .venv
 __pycache__
+*.session
+session-*.gz
+Makefile.venv
+.coverage
