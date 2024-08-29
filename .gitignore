@@ -6,3 +6,4 @@ __pycache__
 session-*.gz
 Makefile.venv
 .coverage
+telethon
