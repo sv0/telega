@@ -1,0 +1,16 @@
+*.gz
+*.session
+.bumpversion.cfg
+.coverage*
+.editorconfig
+.envr*
+.git*
+.dockerignore
+.github
+.pytest_cache
+.venv
+Dockerfile
+Makefile
+Makefile.venv
+README.md
+main.tf
