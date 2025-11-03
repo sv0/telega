@@ -7,6 +7,7 @@ import json
 
 import falcon.asgi
 from telethon.sync import TelegramClient
+from telethon.sessions import SQLiteSession
 
 from .config import Config
 from .utils import get_user_by_phone
@@ -39,7 +40,7 @@ class HomeResource:
         """Home page"""
         resp.content_type = falcon.MEDIA_TEXT
         resp.text = (
-            '\nSup. Wanna search some shit?\n'
+            '\nSup. Wanna search some shit on Telegram?\n'
             'You are on the right way. It is telega API home page.\n\n'
             'Usage examples:\n'
             '\n'
@@ -80,6 +81,9 @@ class SearchTelegramPhoneNumber:
 
 def create_app(config=None):
     config = config or Config()
+
+    # create session
+    session = SQLiteSession(config.telegram_api_phone_number)
 
     app = falcon.asgi.App()
     app.add_route('/', HomeResource())
