@@ -1,11 +1,13 @@
+*.bak
 *.gz
 *.session
+*.sql
 .bumpversion.cfg
 .coverage*
+.dockerignore
 .editorconfig
 .envr*
 .git*
-.dockerignore
 .github
 .pytest_cache
 .venv
@@ -14,3 +16,4 @@ Makefile
 Makefile.venv
 README.md
 main.tf
+telethon
