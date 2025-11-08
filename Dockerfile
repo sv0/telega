@@ -1,5 +1,6 @@
 FROM python:3.11-slim-bookworm
 LABEL org.opencontainers.image.authors="Slavik Svyrydiuk <slavik@svyrydiuk.eu>"
+LABEL org.opencontainers.image.source https://github.com/sv0/telega
 ENV DEBIAN_FRONTEND noninteractive
 ENV LC_ALL "C.UTF-8"
 ENV LANG "C.UTF-8"
