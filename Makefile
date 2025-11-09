@@ -1,5 +1,14 @@
-PORT:=8083
-DEVEL_BRANCH="devel"
+HOST:=127.0.0.1
+PORT:=8000
+DEVEL_BRANCH=devel
+DOCKER_TAG?=ghcr.io/sv0/telega
+
+.PHONY: help
+# target: help - Display callable targets
+help:
+	@grep -E "^# target:" [Mm]akefile | sed 's/# target: //g'
+
+
 # https://github.com/sio/Makefile.venv
 # Seamlessly manage Python virtual environment with a Makefile
 Makefile.venv:
@@ -12,15 +21,13 @@ Makefile.venv:
 
 include Makefile.venv
 
-.PHONY: help
-# target: help - Display callable targets
-help:
-	@egrep "^# target:" [Mm]akefile
 
 .PHONY: install
 # target: install - Install pip requirements
 install: Makefile.venv $(VENV)
-	$(VENV)/pip install -r requirements.txt
+	$(VENV)/pip install \
+		--quiet \
+		--requirement requirements.txt
 
 .PHONY: clean
 # target: clean - Clean repo
@@ -82,7 +89,7 @@ coverage:
 .PHONY: run
 run:
 	DEBUG=$(DEBUG)
-		$(VENV)/uvicorn telega.app:app --port ${PORT}
+		$(VENV)/uvicorn telega.app:app --host ${HOST} --port ${PORT}
 
 .PHONY: login
 # target: login - Log into telegram account and create session file.
@@ -93,3 +100,21 @@ login:
 # target: bak - Create session backup
 bak:
 	gzip --best --stdout *.session > session-backup-$(shell date +%Y-%m-%d).gz
+
+
+.PHONY: docker-build
+docker-build:
+	docker build -t $(DOCKER_TAG):latest \
+		-t $(DOCKER_TAG):$(shell date +%Y%m%d) .
+
+.PHONY: docker-run
+docker-run:
+	docker run -ti -p 8000:8000 $(DOCKER_TAG):latest
+
+.PHONY: docker-push
+docker-push:
+	docker push --all-tags $(DOCKER_TAG)
+
+.PHONY: docker-clean
+docker-clean:
+	docker images | grep -E "$(DOCKER_TAG)|<none>" | awk '{print $$3}' | xargs docker rmi -f

@@ -7,6 +7,8 @@ import json
 
 import falcon.asgi
 from telethon.sync import TelegramClient
+from telethon.sessions import SQLiteSession
+from telethon.crypto import AuthKey
 
 from .config import Config
 from .utils import get_user_by_phone
@@ -29,6 +31,7 @@ async def login(
     await client.connect()
     if not await client.is_user_authorized():
         logger.info("Not authorized")
+
         return
     return client
 
@@ -39,7 +42,7 @@ class HomeResource:
         """Home page"""
         resp.content_type = falcon.MEDIA_TEXT
         resp.text = (
-            '\nSup. Wanna search some shit?\n'
+            '\nSup. Wanna search some shit on Telegram?\n'
             'You are on the right way. It is telega API home page.\n\n'
             'Usage examples:\n'
             '\n'
@@ -58,7 +61,7 @@ class SearchTelegramPhoneNumber:
         logger.debug(result)
         resp.set_header('Access-Control-Allow-Origin', '*')
         if result.get('error'):
-            resp.status = falcon.HTTP_404
+            resp.status = result.get('code', falcon.HTTP_404)
         else:
             resp.status = falcon.HTTP_200
         resp.text = json.dumps(result)
@@ -72,15 +75,39 @@ class SearchTelegramPhoneNumber:
                 self.config.telegram_api_phone_number,
             )
             result = await get_user_by_phone(client, query)
+            assert client is not None
             await client.disconnect()
             return result
+        except AssertionError:
+            return {
+                'error': 'Client is not authorized',
+                'code': falcon.HTTP_500
+            }
         except Exception as err:
-            return {'error': str(err)}
+            return {'error': str(err), 'code': 200}
+
+
+def create_session(config=None):
+    """Create a telethon session or reuse existing one.
+    """
+    session = SQLiteSession(config.telegram_api_phone_number)
+    session.set_dc(
+        config.telegram_session_dc_id,
+        config.telegram_session_server_address,
+        config.telegram_session_port
+    )
+    if config.telegram_session_auth_key:
+        session.auth_key = AuthKey(
+            bytes.fromhex(config.telegram_session_auth_key)
+        )
+        session.save()
 
 
 def create_app(config=None):
     config = config or Config()
+    create_session(config)
 
+    # create app
     app = falcon.asgi.App()
     app.add_route('/', HomeResource())
     app.add_route('/search/{phone}', SearchTelegramPhoneNumber(config))
