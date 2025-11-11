@@ -10,13 +10,29 @@ terraform {
 
 variable "TELEGRAM_API_ID" {
   type = string
+  sensitive   = true
 }
 
 variable "TELEGRAM_API_HASH" {
   type = string
+  sensitive   = true
 }
 
 variable "TELEGRAM_API_PHONE_NUMBER" {
+  type = string
+  sensitive   = true
+}
+
+variable    "TELEGRAM_SESSION_AUTH_KEY" {
+  type = string
+  sensitive   = true
+}
+
+variable    "TELEGRAM_SESSION_DC_ID" {
+  type = string
+}
+
+variable    "TELEGRAM_SESSION_SERVER_ADDRESS" {
   type = string
 }
 
@@ -38,10 +54,12 @@ variable "docker_container_name" {
 
 variable "ghcr_username" {
   type = string
+  sensitive   = true
 }
 
 variable "ghcr_token" {
   type = string
+  sensitive   = true
 }
 
 variable "certresolver" {
@@ -79,6 +97,9 @@ resource "docker_container" "telega" {
     "TELEGRAM_API_ID=${var.TELEGRAM_API_ID}",
     "TELEGRAM_API_HASH=${var.TELEGRAM_API_HASH}",
     "TELEGRAM_API_PHONE_NUMBER=${var.TELEGRAM_API_PHONE_NUMBER}",
+    "TELEGRAM_SESSION_AUTH_KEY=${var.TELEGRAM_SESSION_AUTH_KEY}",
+    "TELEGRAM_SESSION_DC_ID=${var.TELEGRAM_SESSION_DC_ID}",
+    "TELEGRAM_SESSION_SERVER_ADDRESS=${var.TELEGRAM_SESSION_SERVER_ADDRESS}"
   ]
 
   labels {
@@ -93,5 +114,4 @@ resource "docker_container" "telega" {
     label = "traefik.http.routers.${var.docker_container_name}.tls.certresolver"
     value = var.certresolver
   }
-
 }
